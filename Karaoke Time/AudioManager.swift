@@ -42,17 +42,18 @@ class AudioManager: ObservableObject {
     private func configureAudioSession() throws {
         let session = AVAudioSession.sharedInstance()
         
-        // Configure for playback and recording simultaneously
-        // Using voiceChat mode enables echo cancellation and noise suppression
-        try session.setCategory(.playAndRecord, mode: .voiceChat, options: [
+        // Using .measurement mode for LOWEST LATENCY (no processing delay)
+        // This disables echo cancellation but gives near-instant audio passthrough
+        try session.setCategory(.playAndRecord, mode: .measurement, options: [
             .defaultToSpeaker,
             .allowBluetooth,
             .allowBluetoothA2DP
         ])
         
-        // Set preferred sample rate and buffer duration for low latency
-        try session.setPreferredSampleRate(44100)
-        try session.setPreferredIOBufferDuration(0.005) // 5ms buffer for low latency
+        // Request the smallest possible buffer for minimum latency
+        // 0.002 = 2ms buffer (lowest iOS typically allows)
+        try session.setPreferredSampleRate(48000) // Higher sample rate for quality
+        try session.setPreferredIOBufferDuration(0.002) // 2ms ultra-low latency
         
         try session.setActive(true)
     }

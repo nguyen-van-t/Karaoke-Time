@@ -230,7 +230,7 @@ struct ContentView: View {
                     .foregroundColor(KaraokeTheme.primaryGreen)
                     .frame(width: 24)
                 
-                Slider(value: $audioManager.microphoneGain, in: 1...4)
+                Slider(value: $audioManager.microphoneGain, in: 1...10)
                     .accentColor(KaraokeTheme.primaryGreen)
                 
                 Text("\(String(format: "%.1f", audioManager.microphoneGain))x")
