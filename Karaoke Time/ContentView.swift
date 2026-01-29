@@ -224,6 +224,21 @@ struct ContentView: View {
                     .frame(width: 40)
             }
             
+            // Microphone gain boost
+            HStack(spacing: 12) {
+                Image(systemName: "speaker.wave.3.fill")
+                    .foregroundColor(KaraokeTheme.primaryGreen)
+                    .frame(width: 24)
+                
+                Slider(value: $audioManager.microphoneGain, in: 1...4)
+                    .accentColor(KaraokeTheme.primaryGreen)
+                
+                Text("\(String(format: "%.1f", audioManager.microphoneGain))x")
+                    .font(.caption)
+                    .foregroundColor(KaraokeTheme.textSecondary)
+                    .frame(width: 40)
+            }
+            
             // Music volume
             HStack(spacing: 12) {
                 Image(systemName: "music.note")

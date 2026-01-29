@@ -24,6 +24,13 @@ class AudioManager: ObservableObject {
         }
     }
     
+    /// Gain boost for microphone (1.0 to 4.0, where 1.0 is no boost)
+    @Published var microphoneGain: Float = 2.0 {
+        didSet {
+            updateMicrophoneVolume()
+        }
+    }
+    
     private var mixerNode: AVAudioMixerNode?
     
     init() {
@@ -36,11 +43,11 @@ class AudioManager: ObservableObject {
         let session = AVAudioSession.sharedInstance()
         
         // Configure for playback and recording simultaneously
-        try session.setCategory(.playAndRecord, options: [
+        // Using voiceChat mode enables echo cancellation and noise suppression
+        try session.setCategory(.playAndRecord, mode: .voiceChat, options: [
             .defaultToSpeaker,
             .allowBluetooth,
-            .allowBluetoothA2DP,
-            .mixWithOthers
+            .allowBluetoothA2DP
         ])
         
         // Set preferred sample rate and buffer duration for low latency
@@ -56,7 +63,6 @@ class AudioManager: ObservableObject {
         guard !isConfigured else { return }
         
         let inputNode = audioEngine.inputNode
-        let outputNode = audioEngine.outputNode
         let mainMixer = audioEngine.mainMixerNode
         
         // Get the input format
@@ -71,8 +77,11 @@ class AudioManager: ObservableObject {
         audioEngine.connect(inputNode, to: micMixer, format: inputFormat)
         audioEngine.connect(micMixer, to: mainMixer, format: inputFormat)
         
-        // Set initial volume
-        micMixer.outputVolume = microphoneVolume
+        // Set initial volume with gain boost applied
+        micMixer.outputVolume = microphoneVolume * microphoneGain
+        
+        // Boost the main mixer output as well for overall louder sound
+        mainMixer.outputVolume = 1.0
         
         // Install tap to monitor audio levels
         inputNode.installTap(onBus: 0, bufferSize: 1024, format: inputFormat) { [weak self] buffer, _ in
@@ -144,7 +153,7 @@ class AudioManager: ObservableObject {
     }
     
     private func updateMicrophoneVolume() {
-        mixerNode?.outputVolume = microphoneVolume
+        mixerNode?.outputVolume = microphoneVolume * microphoneGain
     }
     
     // MARK: - Notifications
